@@ -1,0 +1,176 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden pt-12 pb-32">
+        <!-- Ambient Glow -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary-500/10 rounded-full blur-[160px] pointer-events-none"></div>
+        <div class="absolute top-40 right-0 w-[400px] h-[400px] bg-purple-500/8 rounded-full blur-[120px] pointer-events-none"></div>
+        
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-4xl mx-auto">
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-400 text-xs font-medium mb-8 animate-fade-in">
+                    <span class="w-1.5 h-1.5 bg-primary-500 rounded-full animate-pulse"></span>
+                    v4.0 — Now with Lavalink v4 Support
+                </div>
+
+                <!-- Heading -->
+                <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight mb-6 animate-slide-up">
+                    The <span class="gradient-text">Ultimate</span><br>
+                    Music Experience
+                </h1>
+                
+                <p class="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed animate-slide-up" style="animation-delay: 100ms">
+                    Crystal-clear audio, powerful filters, and seamless playback. 
+                    Rexom delivers studio-quality music to your Discord server.
+                </p>
+
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style="animation-delay: 200ms">
+                    <a href="https://discord.com/oauth2/authorize?client_id=<%= typeof clientId !== 'undefined' ? clientId : '' %>&permissions=8&scope=bot%20applications.commands" 
+                       class="group relative px-8 py-4 bg-primary-500 hover:bg-primary-400 rounded-2xl font-semibold text-base transition-all duration-300 shadow-2xl shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-[1.02] flex items-center gap-3">
+                        <i class="fab fa-discord text-lg"></i>
+                        Add to Discord
+                        <i class="fas fa-arrow-right text-sm opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"></i>
+                    </a>
+                    <a href="/commands" 
+                       class="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-2xl font-semibold text-base transition-all duration-300 flex items-center gap-3">
+                        <i class="fas fa-terminal text-primary-400"></i>
+                        View Commands
+                    </a>
+                </div>
+
+                <!-- Stats Strip -->
+                <% if (typeof stats !== 'undefined' && stats) { %>
+                <div class="flex items-center justify-center gap-8 sm:gap-14 mt-16 animate-fade-in" style="animation-delay: 400ms">
+                    <div class="text-center">
+                        <div class="text-2xl sm:text-3xl font-bold text-white"><%= stats.guilds?.toLocaleString() || '0' %></div>
+                        <div class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Servers</div>
+                    </div>
+                    <div class="w-px h-10 bg-white/10"></div>
+                    <div class="text-center">
+                        <div class="text-2xl sm:text-3xl font-bold text-white"><%= stats.users?.toLocaleString() || '0' %></div>
+                        <div class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Users</div>
+                    </div>
+                    <div class="w-px h-10 bg-white/10"></div>
+                    <div class="text-center">
+                        <div class="text-2xl sm:text-3xl font-bold text-white"><%= stats.commands || '58' %></div>
+                        <div class="text-xs text-gray-500 mt-1 uppercase tracking-wider">Commands</div>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+
+            <!-- Player Mockup -->
+            <div class="mt-20 max-w-3xl mx-auto animate-slide-up" style="animation-delay: 300ms">
+                <div class="relative">
+                    <!-- Glow behind card -->
+                    <div class="absolute -inset-4 bg-gradient-to-r from-primary-500/20 via-purple-500/10 to-primary-500/20 rounded-3xl blur-2xl opacity-60"></div>
+                    
+                    <div class="relative glass rounded-2xl border border-white/10 p-6 sm:p-8">
+                        <div class="flex items-center gap-5">
+                            <!-- Album Art -->
+                            <div class="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gradient-to-br from-primary-500/30 to-purple-500/30 flex items-center justify-center animate-pulse-soft">
+                                <i class="fas fa-music text-primary-400 text-2xl sm:text-3xl"></i>
+                            </div>
+                            
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm text-primary-400 font-medium mb-0.5">Now Playing</div>
+                                <div class="text-lg sm:text-xl font-bold truncate">Blinding Lights</div>
+                                <div class="text-sm text-gray-400 truncate">The Weeknd</div>
+                                
+                                <!-- Progress -->
+                                <div class="mt-3 flex items-center gap-3">
+                                    <span class="text-xs text-gray-500 font-mono">1:42</span>
+                                    <div class="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+                                        <div class="w-[45%] h-full bg-gradient-to-r from-primary-500 to-primary-400 rounded-full relative">
+                                            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg shadow-primary-500/50 opacity-0 group-hover:opacity-100"></div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-gray-500 font-mono">3:20</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Controls -->
+                        <div class="flex items-center justify-center gap-4 mt-6">
+                            <button class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                                <i class="fas fa-shuffle text-sm"></i>
+                            </button>
+                            <button class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                                <i class="fas fa-backward-step"></i>
+                            </button>
+                            <button class="w-14 h-14 rounded-full bg-primary-500 hover:bg-primary-400 flex items-center justify-center text-white shadow-lg shadow-primary-500/40 hover:scale-105 transition-all">
+                                <i class="fas fa-pause text-lg"></i>
+                            </button>
+                            <button class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                                <i class="fas fa-forward-step"></i>
+                            </button>
+                            <button class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                                <i class="fas fa-repeat text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="relative py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-4">Everything You Need</h2>
+                <p class="text-gray-400 max-w-lg mx-auto">Packed with powerful features for the ultimate music experience in your Discord server.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <% 
+                const features = [
+                    { icon: 'fa-headphones', color: 'from-primary-500 to-rose-500', title: 'Hi-Fi Audio', desc: 'Crystal-clear audio streaming powered by Lavalink v4 with zero lag.' },
+                    { icon: 'fa-sliders', color: 'from-violet-500 to-purple-500', title: 'Audio Filters', desc: 'Bassboost, nightcore, 8D, karaoke, vaporwave and 15+ more effects.' },
+                    { icon: 'fa-magnifying-glass', color: 'from-blue-500 to-cyan-500', title: 'Multi-Source', desc: 'Play from YouTube, Spotify, SoundCloud, Apple Music and more.' },
+                    { icon: 'fa-list', color: 'from-emerald-500 to-green-500', title: 'Smart Queue', desc: 'Drag, reorder, save and share playlists with your community.' },
+                    { icon: 'fa-chart-line', color: 'from-amber-500 to-orange-500', title: 'Web Dashboard', desc: 'Full control panel with analytics, player controls, and server settings.' },
+                    { icon: 'fa-wand-magic-sparkles', color: 'from-pink-500 to-rose-500', title: 'AI Discover', desc: 'Smart recommendations based on your listening history and taste.' },
+                    { icon: 'fa-microphone', color: 'from-cyan-500 to-teal-500', title: 'Live Lyrics', desc: 'Real-time synchronized lyrics powered by Genius integration.' },
+                    { icon: 'fa-radio', color: 'from-indigo-500 to-violet-500', title: 'Live Radio', desc: 'Stream live radio stations from around the world, 24/7.' },
+                    { icon: 'fa-shield-halved', color: 'from-gray-400 to-gray-500', title: 'Reliable', desc: '99.9% uptime with auto-reconnect and 24/7 voice channel support.' },
+                ];
+                features.forEach((f, i) => { %>
+                <div class="group glass rounded-2xl p-6 hover:bg-white/[0.06] hover:border-white/10 transition-all duration-500 hover-lift" style="animation: slideUp 0.5s cubic-bezier(0.16,1,0.3,1) backwards; animation-delay: <%= i * 60 %>ms">
+                    <div class="w-11 h-11 rounded-xl bg-gradient-to-br <%= f.color %> flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <i class="fas <%= f.icon %> text-white text-sm"></i>
+                    </div>
+                    <h3 class="text-base font-semibold mb-2"><%= f.title %></h3>
+                    <p class="text-sm text-gray-400 leading-relaxed"><%= f.desc %></p>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="relative py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="relative overflow-hidden rounded-3xl">
+                <!-- Glow -->
+                <div class="absolute inset-0 bg-gradient-to-r from-primary-500/20 via-purple-500/10 to-primary-500/20 blur-xl"></div>
+                
+                <div class="relative glass border-primary-500/20 rounded-3xl px-8 py-16 sm:px-16 text-center">
+                    <h2 class="text-3xl sm:text-4xl font-bold mb-4">Ready to Elevate Your Server?</h2>
+                    <p class="text-gray-400 max-w-lg mx-auto mb-8">
+                        Join thousands of servers already enjoying premium music with Rexom.
+                    </p>
+                    <a href="https://discord.com/oauth2/authorize?client_id=<%= typeof clientId !== 'undefined' ? clientId : '' %>&permissions=8&scope=bot%20applications.commands" 
+                       class="inline-flex items-center gap-3 px-8 py-4 bg-primary-500 hover:bg-primary-400 rounded-2xl font-semibold transition-all duration-300 shadow-2xl shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-[1.02]">
+                        <i class="fab fa-discord text-lg"></i>
+                        Add to Discord — It's Free
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title + ' - ' : '' %>Rexom Music Bot</title>
+    
+    <meta name="description" content="Rexom - Premium Discord Music Bot with High-Quality Audio">
+    <meta name="theme-color" content="#e94560">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js (for analytics) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#fff0f3', 100: '#ffe0e8', 200: '#ffc7d6', 300: '#ff9db6',
+                            400: '#ff6b8f', 500: '#e94560', 600: '#d12948', 700: '#b01f3c',
+                            800: '#931d38', 900: '#7d1c35',
+                        },
+                        surface: {
+                            50: '#f8f9fb', 100: '#e8eaef', 200: '#cfd3db',
+                            300: '#a2a8b5', 400: '#6b7280', 500: '#424957',
+                            600: '#2d3341', 700: '#1f2433', 800: '#151a27',
+                            900: '#0d111c', 950: '#080b12',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-slow': 'float 10s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'slide-up': 'slideUp 0.6s cubic-bezier(0.16,1,0.3,1)',
+                        'slide-down': 'slideDown 0.6s cubic-bezier(0.16,1,0.3,1)',
+                        'fade-in': 'fadeIn 0.8s cubic-bezier(0.16,1,0.3,1)',
+                        'scale-in': 'scaleIn 0.4s cubic-bezier(0.16,1,0.3,1)',
+                        'spin-slow': 'spin 8s linear infinite',
+                        'pulse-soft': 'pulseSoft 3s ease-in-out infinite',
+                        'border-glow': 'borderGlow 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        gradient: {
+                            '0%, 100%': { backgroundPosition: '0% 50%' },
+                            '50%': { backgroundPosition: '100% 50%' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 20px rgba(233,69,96,0.3)' },
+                            '100%': { boxShadow: '0 0 40px rgba(233,69,96,0.6), 0 0 80px rgba(233,69,96,0.2)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(40px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        slideDown: {
+                            '0%': { transform: 'translateY(-40px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        scaleIn: {
+                            '0%': { transform: 'scale(0.95)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' },
+                        },
+                        pulseSoft: {
+                            '0%, 100%': { opacity: '0.4' },
+                            '50%': { opacity: '0.8' },
+                        },
+                        borderGlow: {
+                            '0%, 100%': { borderColor: 'rgba(233,69,96,0.3)' },
+                            '50%': { borderColor: 'rgba(233,69,96,0.8)' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        * { font-family: 'Outfit', system-ui, sans-serif; }
+        
+        /* Glass card */
+        .glass {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .glass-hover:hover {
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(233,69,96,0.3);
+        }
+        
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #e94560 0%, #ff6b8f 50%, #667eea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .gradient-text-alt {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #e94560 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Animated gradient bg */
+        .gradient-bg {
+            background: linear-gradient(-45deg, #0d111c, #151a27, #1a1030, #0d111c);
+            background-size: 400% 400%;
+            animation: gradient 20s ease infinite;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(233,69,96,0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(233,69,96,0.6); }
+        
+        /* Hover lift */
+        .hover-lift {
+            transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+        }
+        .hover-lift:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px -12px rgba(233,69,96,0.25);
+        }
+        
+        /* Glow border on hover */
+        .glow-border {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .glow-border::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, transparent, rgba(233,69,96,0.5), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+        .glow-border:hover::before { opacity: 1; }
+        
+        /* Toggle switch */
+        .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer; inset: 0;
+            background: rgba(255,255,255,0.1); border-radius: 24px;
+            transition: all 0.3s ease;
+        }
+        .toggle-slider::before {
+            content: ''; position: absolute; height: 18px; width: 18px;
+            left: 3px; bottom: 3px; background: white; border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        .toggle-switch input:checked + .toggle-slider { background: #e94560; }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+        
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 2rem; right: 2rem; z-index: 9999;
+            transform: translateY(120%); opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        
+        /* Noise overlay */
+        body::after {
+            content: ''; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+            opacity: 0.015;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+        
+        /* Skeleton */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
+        
+        /* Modal */
+        .modal-overlay { transition: all 0.3s ease; }
+        .modal-content { transition: all 0.3s cubic-bezier(0.16,1,0.3,1); }
+        
+        /* Code / command tag */
+        .cmd-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            background: rgba(233,69,96,0.15);
+            color: #ff6b8f;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(233,69,96,0.2);
+        }
+    </style>
+</head>
+<body class="bg-surface-950 text-gray-100 min-h-screen gradient-bg">

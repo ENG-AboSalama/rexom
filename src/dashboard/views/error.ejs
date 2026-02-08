@@ -1,0 +1,35 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+    <section class="relative flex items-center justify-center min-h-[70vh] py-12">
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="text-[20rem] font-black text-white/[0.02] select-none leading-none"><%= typeof statusCode !== 'undefined' ? statusCode : '404' %></div>
+        </div>
+        
+        <div class="relative text-center px-4 max-w-lg mx-auto animate-slide-up">
+            <div class="w-20 h-20 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center mx-auto mb-8">
+                <i class="fas fa-<%= typeof statusCode !== 'undefined' && statusCode === 500 ? 'exclamation-triangle' : 'ghost' %> text-3xl text-primary-400"></i>
+            </div>
+            
+            <h1 class="text-5xl font-black mb-3 gradient-text"><%= typeof statusCode !== 'undefined' ? statusCode : '404' %></h1>
+            <h2 class="text-xl font-semibold mb-3">
+                <%= typeof message !== 'undefined' ? message : 'Page Not Found' %>
+            </h2>
+            <p class="text-gray-400 text-sm mb-8 leading-relaxed">
+                <%= typeof statusCode !== 'undefined' && statusCode === 500 
+                    ? 'Something went wrong on our end. Please try again later.' 
+                    : "The page you're looking for doesn't exist or has been moved." %>
+            </p>
+            
+            <div class="flex items-center justify-center gap-3">
+                <a href="/" class="px-6 py-3 bg-primary-500 hover:bg-primary-400 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-primary-500/25 flex items-center gap-2">
+                    <i class="fas fa-home"></i>Go Home
+                </a>
+                <button onclick="history.back()" class="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl font-semibold text-sm transition-all flex items-center gap-2">
+                    <i class="fas fa-arrow-left"></i>Go Back
+                </button>
+            </div>
+        </div>
+    </section>
+
+<%- include('partials/footer') %>

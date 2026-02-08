@@ -1,0 +1,106 @@
+    <!-- Navbar -->
+    <nav x-data="{ scrolled: false, mobileOpen: false, userMenu: false }" 
+         @scroll.window="scrolled = window.scrollY > 20"
+         :class="scrolled ? 'bg-surface-950/80 backdrop-blur-2xl shadow-2xl shadow-black/30 border-b border-white/5' : 'bg-transparent'"
+         class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-[72px]">
+                
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-3 group">
+                    <div class="relative">
+                        <div class="absolute inset-0 bg-primary-500 rounded-xl blur-xl opacity-0 group-hover:opacity-50 transition-all duration-500"></div>
+                        <div class="relative w-10 h-10 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-xl flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+                            <i class="fas fa-music text-white text-sm"></i>
+                        </div>
+                    </div>
+                    <span class="text-xl font-extrabold tracking-tight gradient-text hidden sm:block">REXOM</span>
+                </a>
+
+                <!-- Desktop Nav -->
+                <div class="hidden md:flex items-center gap-1">
+                    <a href="/" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">Home</a>
+                    <a href="/commands" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">Commands</a>
+                    <a href="/status" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">Status</a>
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <a href="/dashboard" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200">Dashboard</a>
+                    <% } %>
+                </div>
+
+                <!-- Right Side -->
+                <div class="flex items-center gap-3">
+                    <% if (typeof user !== 'undefined' && user) { %>
+                        <div class="relative" @click.away="userMenu = false">
+                            <button @click="userMenu = !userMenu" 
+                                    class="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all duration-200">
+                                <img src="https://cdn.discordapp.com/avatars/<%= user.id %>/<%= user.avatar %>.png" 
+                                     alt="" class="w-7 h-7 rounded-full ring-2 ring-primary-500/50">
+                                <span class="text-sm font-medium hidden sm:block"><%= user.username %></span>
+                                <i class="fas fa-chevron-down text-[10px] text-gray-400 transition-transform duration-200" 
+                                   :class="userMenu && 'rotate-180'"></i>
+                            </button>
+                            
+                            <div x-show="userMenu" x-transition:enter="transition ease-out duration-200" 
+                                 x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                                 x-transition:leave="transition ease-in duration-150"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
+                                 class="absolute right-0 mt-3 w-52 bg-surface-800/95 backdrop-blur-2xl rounded-xl shadow-2xl shadow-black/50 border border-white/10 py-1.5 z-50 overflow-hidden">
+                                <a href="/dashboard" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all">
+                                    <i class="fas fa-th-large w-4 text-primary-400"></i>Servers
+                                </a>
+                                <a href="/playlists" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all">
+                                    <i class="fas fa-list w-4 text-primary-400"></i>Playlists
+                                </a>
+                                <div class="my-1 border-t border-white/5"></div>
+                                <a href="/logout" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-all">
+                                    <i class="fas fa-sign-out-alt w-4"></i>Logout
+                                </a>
+                            </div>
+                        </div>
+                    <% } else { %>
+                        <a href="/login" 
+                           class="group flex items-center gap-2 px-5 py-2.5 bg-primary-500 hover:bg-primary-400 rounded-xl text-sm font-semibold transition-all duration-300 shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 hover:scale-[1.02]">
+                            <i class="fab fa-discord text-base"></i>
+                            <span>Login</span>
+                        </a>
+                    <% } %>
+
+                    <!-- Mobile Menu -->
+                    <button @click="mobileOpen = !mobileOpen" class="md:hidden p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-all">
+                        <div class="w-5 h-4 flex flex-col justify-between">
+                            <span class="block h-0.5 bg-white rounded transition-all duration-300" 
+                                  :class="mobileOpen && 'rotate-45 translate-y-[7px]'"></span>
+                            <span class="block h-0.5 bg-white rounded transition-all duration-300" 
+                                  :class="mobileOpen && 'opacity-0'"></span>
+                            <span class="block h-0.5 bg-white rounded transition-all duration-300" 
+                                  :class="mobileOpen && '-rotate-45 -translate-y-[7px]'"></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Dropdown -->
+        <div x-show="mobileOpen" x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             @click.away="mobileOpen = false"
+             class="md:hidden bg-surface-900/95 backdrop-blur-2xl border-t border-white/5">
+            <div class="px-4 py-4 space-y-1">
+                <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all"><i class="fas fa-home w-5"></i>Home</a>
+                <a href="/commands" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all"><i class="fas fa-terminal w-5"></i>Commands</a>
+                <a href="/status" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all"><i class="fas fa-server w-5"></i>Status</a>
+                <% if (typeof user !== 'undefined' && user) { %>
+                    <a href="/dashboard" class="flex items-center gap-3 px-4 py-3 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all"><i class="fas fa-th-large w-5"></i>Dashboard</a>
+                    <div class="my-2 border-t border-white/5"></div>
+                    <a href="/logout" class="flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/5 transition-all"><i class="fas fa-sign-out-alt w-5"></i>Logout</a>
+                <% } else { %>
+                    <a href="/login" class="flex items-center justify-center gap-2 px-4 py-3 bg-primary-500 rounded-xl text-white font-semibold"><i class="fab fa-discord"></i>Login with Discord</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+    <div class="h-[72px]"></div>

@@ -1,0 +1,189 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+    <%
+        const cmCatKeys = typeof categories !== 'undefined' ? Object.keys(categories) : [];
+        const cmPerms = typeof permissions !== 'undefined' ? permissions : {};
+        const cmRoles = typeof roles !== 'undefined' ? roles : [];
+    %>
+
+    <section class="relative py-8" x-data="commandsManage()">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Back + Server Name -->
+            <div class="flex items-center gap-4 mb-8">
+                <a href="/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all">
+                    <i class="fas fa-arrow-left text-sm text-gray-400"></i>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold"><%= typeof guild !== 'undefined' ? guild.name : 'Server' %></h1>
+                    <p class="text-sm text-gray-500">Manage Commands</p>
+                </div>
+            </div>
+
+            <!-- Search & Bulk Actions -->
+            <div class="flex flex-col sm:flex-row gap-3 mb-6">
+                <div class="flex-1 relative">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                    <input x-model="search" type="text" placeholder="Search commands..." 
+                           class="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-primary-500/50 transition-all placeholder:text-gray-600">
+                </div>
+                <div class="flex gap-2">
+                    <button @click="enableAll()" class="px-4 py-3 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl text-sm font-medium transition-all">
+                        <i class="fas fa-check-double mr-1.5"></i>Enable All
+                    </button>
+                    <button @click="disableAll()" class="px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-sm font-medium transition-all">
+                        <i class="fas fa-ban mr-1.5"></i>Disable All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Category Filter -->
+            <div class="flex gap-1.5 overflow-x-auto pb-3 mb-6 scrollbar-none">
+                <button @click="activeCategory = 'all'" 
+                        :class="activeCategory === 'all' ? 'bg-primary-500 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'"
+                        class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all">All</button>
+                <% cmCatKeys.forEach(cat => { %>
+                <button @click="activeCategory = '<%= cat %>'" 
+                        :class="activeCategory === '<%= cat %>' ? 'bg-primary-500 text-white' : 'bg-white/5 text-gray-400 hover:bg-white/10'"
+                        class="px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all capitalize"><%= cat %></button>
+                <% }); %>
+            </div>
+
+            <!-- Commands List -->
+            <div class="space-y-2">
+                <% cmCatKeys.forEach(cat => { %>
+                    <% (categories[cat] || []).forEach(cmd => { 
+                        const cmdPerm = cmPerms[cmd.name] || { enabled: true, roles: [] };
+                    %>
+                    <div x-show="(activeCategory === 'all' || activeCategory === '<%= cat %>') && matchesSearch('<%= cmd.name %>', '<%= (cmd.description || '').replace(/'/g, "\\'") %>')"
+                         x-transition
+                         class="glass rounded-xl p-4 hover:bg-white/[0.04] transition-all group">
+                        <div class="flex items-center gap-4">
+                            <!-- Toggle -->
+                            <label class="toggle-switch flex-shrink-0">
+                                <input type="checkbox" 
+                                       :checked="perms['<%= cmd.name %>']?.enabled !== false" 
+                                       @change="toggleCommand('<%= cmd.name %>', $event.target.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+
+                            <!-- Info -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="cmd-tag">/<%= cmd.name %></span>
+                                    <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-white/5 text-gray-500"><%= cat %></span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1 truncate"><%= cmd.description || 'No description' %></p>
+                            </div>
+
+                            <!-- Role restriction badge -->
+                            <div class="flex-shrink-0" :class="perms['<%= cmd.name %>']?.enabled === false ? 'opacity-30' : ''">
+                                <button @click="editingCommand = '<%= cmd.name %>'; showRoleModal = true" 
+                                        class="text-xs text-gray-500 hover:text-primary-400 px-2 py-1 rounded-lg hover:bg-white/5 transition-all">
+                                    <i class="fas fa-user-shield mr-1"></i>Roles
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <% }); %>
+                <% }); %>
+            </div>
+
+            <!-- Save -->
+            <div class="mt-8 flex items-center justify-between">
+                <div x-show="saved" x-transition class="flex items-center gap-2 text-sm text-emerald-400">
+                    <i class="fas fa-check-circle"></i>Saved!
+                </div>
+                <div class="flex-1"></div>
+                <button @click="saveAll()" :disabled="saving"
+                        class="px-6 py-3 bg-primary-500 hover:bg-primary-400 disabled:opacity-50 rounded-xl font-semibold text-sm transition-all shadow-lg shadow-primary-500/25 flex items-center gap-2">
+                    <i class="fas" :class="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                    <span x-text="saving ? 'Saving...' : 'Save Changes'"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Role Assignment Modal -->
+        <div x-show="showRoleModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" @click.self="showRoleModal = false">
+            <div x-show="showRoleModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                 class="bg-surface-800 border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-6">
+                <h3 class="text-lg font-semibold mb-1">Role Restrictions</h3>
+                <p class="text-xs text-gray-500 mb-4">Select which roles can use <span class="cmd-tag" x-text="'/' + editingCommand"></span></p>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    <% cmRoles.forEach(role => { %>
+                    <label class="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-white/5 cursor-pointer transition-all">
+                        <input type="checkbox" class="w-4 h-4 rounded accent-primary-500"
+                               :checked="(perms[editingCommand]?.roles || []).includes('<%= role.id %>')"
+                               @change="toggleRole(editingCommand, '<%= role.id %>', $event.target.checked)">
+                        <span class="text-sm"><%= role.name %></span>
+                    </label>
+                    <% }); %>
+                </div>
+                <div class="flex justify-end mt-4">
+                    <button @click="showRoleModal = false" class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-medium transition-all">Done</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function commandsManage() {
+            return {
+                search: '',
+                activeCategory: 'all',
+                saving: false,
+                saved: false,
+                showRoleModal: false,
+                editingCommand: '',
+                perms: <%- JSON.stringify(typeof permissions !== 'undefined' ? permissions : {}) %>,
+
+                matchesSearch(name, desc) {
+                    if (!this.search) return true;
+                    const s = this.search.toLowerCase();
+                    return name.toLowerCase().includes(s) || desc.toLowerCase().includes(s);
+                },
+
+                toggleCommand(name, enabled) {
+                    if (!this.perms[name]) this.perms[name] = { enabled: true, roles: [] };
+                    this.perms[name].enabled = enabled;
+                },
+
+                toggleRole(cmd, roleId, checked) {
+                    if (!this.perms[cmd]) this.perms[cmd] = { enabled: true, roles: [] };
+                    if (checked) {
+                        if (!this.perms[cmd].roles.includes(roleId)) this.perms[cmd].roles.push(roleId);
+                    } else {
+                        this.perms[cmd].roles = this.perms[cmd].roles.filter(r => r !== roleId);
+                    }
+                },
+
+                enableAll() {
+                    Object.keys(this.perms).forEach(k => this.perms[k].enabled = true);
+                },
+                disableAll() {
+                    Object.keys(this.perms).forEach(k => this.perms[k].enabled = false);
+                },
+
+                async saveAll() {
+                    this.saving = true;
+                    this.saved = false;
+                    try {
+                        const res = await fetch('/api/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>/commands', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ permissions: this.perms })
+                        });
+                        if (res.ok) {
+                            this.saved = true;
+                            setTimeout(() => this.saved = false, 3000);
+                        }
+                    } catch(e) { console.error(e); }
+                    this.saving = false;
+                }
+            };
+        }
+    </script>
+
+<%- include('partials/footer') %>

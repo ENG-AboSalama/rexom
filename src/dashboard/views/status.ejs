@@ -1,0 +1,158 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+    <%
+        function formatUptime(ms) {
+            const s = Math.floor(ms / 1000);
+            const d = Math.floor(s / 86400);
+            const h = Math.floor((s % 86400) / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            const parts = [];
+            if (d > 0) parts.push(d + 'd');
+            if (h > 0) parts.push(h + 'h');
+            parts.push(m + 'm');
+            return parts.join(' ');
+        }
+        const botUptime = typeof bot !== 'undefined' ? formatUptime(bot.uptime) : '0m';
+        const isOnline = typeof bot !== 'undefined';
+        const lavalinkOk = typeof lavalink !== 'undefined' && lavalink.connected;
+    %>
+
+    <!-- Status Page -->
+    <section class="relative py-12">
+        <div class="absolute top-0 left-0 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+        
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-10">
+                <div>
+                    <h1 class="text-4xl font-bold mb-3">System Status</h1>
+                    <p class="text-gray-400">Real-time status of all Rexom services</p>
+                </div>
+                <div class="flex items-center gap-2.5 px-4 py-2 rounded-xl <%= isOnline ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-red-500/10 border border-red-500/20' %>">
+                    <span class="w-2 h-2 rounded-full <%= isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-red-500' %>"></span>
+                    <span class="text-sm font-medium <%= isOnline ? 'text-emerald-400' : 'text-red-400' %>">
+                        <%= isOnline ? 'All Systems Operational' : 'Degraded' %>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Service Status Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <!-- Bot Status -->
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-rose-500 flex items-center justify-center">
+                                <i class="fas fa-robot text-white text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">Discord Bot</h3>
+                                <p class="text-xs text-gray-500">Core gateway connection</p>
+                            </div>
+                        </div>
+                        <span class="w-3 h-3 rounded-full <%= isOnline ? 'bg-emerald-500' : 'bg-red-500' %> animate-pulse"></span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/5 rounded-xl p-3.5">
+                            <div class="text-xs text-gray-500 mb-1">Ping</div>
+                            <div class="text-lg font-bold"><%= typeof bot !== 'undefined' ? bot.ping : '—' %><span class="text-xs text-gray-500 ml-1">ms</span></div>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-3.5">
+                            <div class="text-xs text-gray-500 mb-1">Uptime</div>
+                            <div class="text-lg font-bold"><%= botUptime %></div>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-3.5">
+                            <div class="text-xs text-gray-500 mb-1">Servers</div>
+                            <div class="text-lg font-bold"><%= typeof bot !== 'undefined' ? bot.guilds?.toLocaleString() : '0' %></div>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-3.5">
+                            <div class="text-xs text-gray-500 mb-1">Players</div>
+                            <div class="text-lg font-bold"><%= typeof bot !== 'undefined' ? (bot.players || 0) : '0' %></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lavalink Status -->
+                <div class="glass rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
+                                <i class="fas fa-server text-white text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">Lavalink Node</h3>
+                                <p class="text-xs text-gray-500">Audio processing engine</p>
+                            </div>
+                        </div>
+                        <span class="w-3 h-3 rounded-full <%= lavalinkOk ? 'bg-emerald-500' : 'bg-red-500' %> animate-pulse"></span>
+                    </div>
+                    <% if (lavalinkOk && lavalink.stats) { %>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/5 rounded-xl p-3.5">
+                            <div class="text-xs text-gray-500 mb-1">Active Players</div>
+                            <div class="text-lg font-bold"><%= lavalink.stats.players || 0 %></div>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-3.5">
+                            <div class="text-xs text-gray-500 mb-1">Playing</div>
+                            <div class="text-lg font-bold"><%= lavalink.stats.playingPlayers || 0 %></div>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-3.5">
+                            <div class="text-xs text-gray-500 mb-1">Memory</div>
+                            <div class="text-lg font-bold">
+                                <% if (lavalink.stats.memory) { %>
+                                    <%= Math.round(lavalink.stats.memory.used / 1024 / 1024) %><span class="text-xs text-gray-500 ml-1">MB</span>
+                                <% } else { %>—<% } %>
+                            </div>
+                        </div>
+                        <div class="bg-white/5 rounded-xl p-3.5">
+                            <div class="text-xs text-gray-500 mb-1">CPU</div>
+                            <div class="text-lg font-bold">
+                                <% if (lavalink.stats.cpu) { %>
+                                    <%= (lavalink.stats.cpu.lavalinkLoad * 100).toFixed(1) %><span class="text-xs text-gray-500 ml-1">%</span>
+                                <% } else { %>—<% } %>
+                            </div>
+                        </div>
+                    </div>
+                    <% } else { %>
+                    <div class="text-center py-6">
+                        <i class="fas fa-exclamation-triangle text-2xl text-red-400 mb-3"></i>
+                        <p class="text-sm text-gray-400">Lavalink node is not connected</p>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Service Health -->
+            <div class="glass rounded-2xl p-6">
+                <h3 class="font-semibold mb-5">Service Health</h3>
+                <div class="space-y-3">
+                    <%
+                        const services = [
+                            { name: 'Discord Gateway', icon: 'fab fa-discord', status: isOnline },
+                            { name: 'Lavalink Audio', icon: 'fas fa-headphones', status: lavalinkOk },
+                            { name: 'Web Dashboard', icon: 'fas fa-globe', status: true },
+                            { name: 'Database', icon: 'fas fa-database', status: true },
+                        ];
+                    %>
+                    <% services.forEach(svc => { %>
+                    <div class="flex items-center justify-between py-3 px-4 rounded-xl bg-white/[0.02] hover:bg-white/5 transition-all">
+                        <div class="flex items-center gap-3">
+                            <i class="<%= svc.icon %> w-5 text-center text-gray-400"></i>
+                            <span class="text-sm font-medium"><%= svc.name %></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-medium <%= svc.status ? 'text-emerald-400' : 'text-red-400' %>">
+                                <%= svc.status ? 'Operational' : 'Down' %>
+                            </span>
+                            <span class="w-2 h-2 rounded-full <%= svc.status ? 'bg-emerald-500' : 'bg-red-500' %>"></span>
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,266 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+    <section class="relative py-8" x-data="playerPage()">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary-500/8 rounded-full blur-[160px] pointer-events-none"></div>
+        
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Back + Server Name -->
+            <div class="flex items-center gap-4 mb-8">
+                <a href="/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all">
+                    <i class="fas fa-arrow-left text-sm text-gray-400"></i>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold"><%= typeof guild !== 'undefined' ? guild.name : 'Server' %></h1>
+                    <p class="text-sm text-gray-500">Music Player</p>
+                </div>
+            </div>
+
+            <% if (typeof player !== 'undefined' && player && player.queue && player.queue.length > 0) { %>
+
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                
+                <!-- Now Playing (3 cols) -->
+                <div class="lg:col-span-3">
+                    <div class="glass rounded-2xl p-6 sm:p-8">
+                        
+                        <!-- Track Info -->
+                        <div class="flex items-start gap-5 mb-6">
+                            <div class="flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-gradient-to-br from-primary-500/20 to-purple-500/20 flex items-center justify-center">
+                                <% if (player.queue[0] && player.queue[0].thumbnail) { %>
+                                    <img :src="currentTrack?.thumbnail || '<%= player.queue[0].thumbnail %>'" alt="" class="w-full h-full object-cover">
+                                <% } else { %>
+                                    <i class="fas fa-music text-3xl text-primary-400 animate-pulse-soft"></i>
+                                <% } %>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-xs text-primary-400 font-medium uppercase tracking-wider mb-1">Now Playing</div>
+                                <h2 class="text-xl font-bold truncate" x-text="currentTrack?.title || '<%= (player.queue[0]?.title || 'Unknown').replace(/'/g, "\\'") %>'"></h2>
+                                <p class="text-sm text-gray-400 truncate mt-1" x-text="currentTrack?.author || '<%= (player.queue[0]?.author || 'Unknown').replace(/'/g, "\\'") %>'"></p>
+                                <% if (player.queue[0]?.uri) { %>
+                                <a :href="currentTrack?.uri || '<%= player.queue[0].uri %>'" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-primary-400 mt-2 transition-colors">
+                                    <i class="fas fa-external-link-alt"></i>Open source
+                                </a>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mb-6">
+                            <div class="relative h-2 bg-white/10 rounded-full cursor-pointer group" @click="seek($event)">
+                                <div class="h-full bg-gradient-to-r from-primary-500 to-primary-400 rounded-full transition-all duration-300 relative"
+                                     :style="'width:' + progressPercent + '%'">
+                                    <div class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg shadow-primary-500/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between mt-2">
+                                <span class="text-xs text-gray-500 font-mono" x-text="formatTime(position)"></span>
+                                <span class="text-xs text-gray-500 font-mono" x-text="formatTime(duration)"></span>
+                            </div>
+                        </div>
+
+                        <!-- Controls -->
+                        <div class="flex items-center justify-center gap-3">
+                            <button @click="toggleShuffle()" :class="shuffled ? 'text-primary-400' : 'text-gray-500 hover:text-white'"
+                                    class="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-white/5">
+                                <i class="fas fa-shuffle text-sm"></i>
+                            </button>
+                            <button @click="sendAction('previous')" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all hover:bg-white/5">
+                                <i class="fas fa-backward-step"></i>
+                            </button>
+                            <button @click="sendAction(paused ? 'resume' : 'pause')" 
+                                    class="w-16 h-16 rounded-full bg-primary-500 hover:bg-primary-400 flex items-center justify-center text-white shadow-xl shadow-primary-500/30 hover:scale-105 transition-all">
+                                <i class="fas" :class="paused ? 'fa-play ml-1' : 'fa-pause'" style="font-size: 1.2rem"></i>
+                            </button>
+                            <button @click="sendAction('skip')" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all hover:bg-white/5">
+                                <i class="fas fa-forward-step"></i>
+                            </button>
+                            <button @click="cycleLoop()" :class="loop !== 'none' ? 'text-primary-400' : 'text-gray-500 hover:text-white'"
+                                    class="w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-white/5 relative">
+                                <i class="fas fa-repeat text-sm"></i>
+                                <span x-show="loop === 'track'" class="absolute -top-0.5 -right-0.5 text-[8px] font-bold bg-primary-500 rounded-full w-3.5 h-3.5 flex items-center justify-center">1</span>
+                            </button>
+                        </div>
+
+                        <!-- Volume -->
+                        <div class="flex items-center gap-3 mt-6 px-4">
+                            <i class="fas fa-volume-low text-gray-500 text-sm"></i>
+                            <input type="range" x-model="volume" @change="sendVolume()" min="0" max="100" 
+                                   class="flex-1 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-primary-500">
+                            <span class="text-xs font-mono text-gray-500 w-8 text-right" x-text="volume + '%'"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Queue (2 cols) -->
+                <div class="lg:col-span-2">
+                    <div class="glass rounded-2xl p-5 h-full max-h-[600px] flex flex-col">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="font-semibold">Queue</h3>
+                                <p class="text-xs text-gray-500" x-text="queue.length + ' tracks'"></p>
+                            </div>
+                            <button @click="sendAction('clear')" class="text-xs text-gray-500 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/5">
+                                <i class="fas fa-trash mr-1"></i>Clear
+                            </button>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto space-y-1.5 pr-1">
+                            <template x-for="(track, idx) in queue" :key="idx">
+                                <div :class="idx === 0 ? 'bg-primary-500/10 border-primary-500/20' : 'bg-white/[0.02] hover:bg-white/5 border-transparent'"
+                                     class="flex items-center gap-3 p-3 rounded-xl border transition-all group">
+                                    <span class="text-xs font-mono w-6 text-center" :class="idx === 0 ? 'text-primary-400' : 'text-gray-600'" x-text="idx === 0 ? '▶' : idx"></span>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-sm font-medium truncate" x-text="track.title"></div>
+                                        <div class="text-xs text-gray-500 truncate" x-text="track.author"></div>
+                                    </div>
+                                    <button x-show="idx > 0" @click="removeTrack(idx)" 
+                                            class="flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-gray-600 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all">
+                                        <i class="fas fa-times text-xs"></i>
+                                    </button>
+                                </div>
+                            </template>
+                            
+                            <div x-show="queue.length === 0" class="text-center py-10">
+                                <i class="fas fa-music text-2xl text-gray-700 mb-3"></i>
+                                <p class="text-sm text-gray-500">Queue is empty</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <% } else { %>
+            <!-- No Player -->
+            <div class="text-center py-24">
+                <div class="w-20 h-20 rounded-2xl bg-white/5 flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-music text-3xl text-gray-600"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Nothing is playing</h3>
+                <p class="text-gray-400 text-sm max-w-sm mx-auto">Use <span class="cmd-tag">/play</span> in your Discord server to start playing music.</p>
+            </div>
+            <% } %>
+        </div>
+    </section>
+
+    <script>
+        function playerPage() {
+            const initialPlayer = <%- JSON.stringify(typeof player !== 'undefined' && player ? player : { paused: false, position: 0, volume: 50, loop: 'none', queue: [] }) %>;
+            return {
+                paused: initialPlayer.paused || false,
+                position: initialPlayer.position || 0,
+                duration: (initialPlayer.queue && initialPlayer.queue[0]?.duration) || 0,
+                volume: initialPlayer.volume || 50,
+                loop: initialPlayer.loop || 'none',
+                shuffled: false,
+                queue: initialPlayer.queue || [],
+                currentTrack: initialPlayer.queue?.[0] || null,
+                pollInterval: null,
+
+                get progressPercent() {
+                    if (!this.duration) return 0;
+                    return Math.min((this.position / this.duration) * 100, 100);
+                },
+
+                formatTime(ms) {
+                    if (!ms || ms < 0) return '0:00';
+                    const s = Math.floor(ms / 1000);
+                    const m = Math.floor(s / 60);
+                    const sec = s % 60;
+                    return m + ':' + String(sec).padStart(2, '0');
+                },
+
+                init() {
+                    this.pollInterval = setInterval(() => this.fetchState(), 5000);
+                    // Increment position locally
+                    setInterval(() => {
+                        if (!this.paused && this.position < this.duration) {
+                            this.position += 1000;
+                        }
+                    }, 1000);
+                },
+
+                async fetchState() {
+                    try {
+                        const res = await fetch('/api/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>/player');
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data) {
+                                this.paused = data.paused;
+                                this.position = data.position;
+                                this.volume = data.volume;
+                                this.loop = data.loop || 'none';
+                                this.queue = data.queue || [];
+                                this.currentTrack = this.queue[0] || null;
+                                this.duration = this.currentTrack?.duration || 0;
+                            }
+                        }
+                    } catch(e) {}
+                },
+
+                async sendAction(action) {
+                    try {
+                        await fetch('/api/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>/player/' + action, { method: 'POST' });
+                        if (action === 'pause') this.paused = true;
+                        if (action === 'resume') this.paused = false;
+                        setTimeout(() => this.fetchState(), 500);
+                    } catch(e) {}
+                },
+
+                async sendVolume() {
+                    try {
+                        await fetch('/api/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>/player/volume', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ volume: parseInt(this.volume) })
+                        });
+                    } catch(e) {}
+                },
+
+                async seek(event) {
+                    if (!this.duration) return;
+                    const rect = event.target.getBoundingClientRect();
+                    const pct = (event.clientX - rect.left) / rect.width;
+                    const pos = Math.floor(pct * this.duration);
+                    this.position = pos;
+                    try {
+                        await fetch('/api/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>/player/seek', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ position: pos })
+                        });
+                    } catch(e) {}
+                },
+
+                async removeTrack(idx) {
+                    try {
+                        await fetch('/api/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>/player/remove', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ index: idx })
+                        });
+                        this.queue.splice(idx, 1);
+                    } catch(e) {}
+                },
+
+                toggleShuffle() {
+                    this.shuffled = !this.shuffled;
+                    this.sendAction('shuffle');
+                },
+
+                cycleLoop() {
+                    const modes = ['none', 'queue', 'track'];
+                    const next = modes[(modes.indexOf(this.loop) + 1) % modes.length];
+                    this.loop = next;
+                    fetch('/api/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>/player/loop', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ mode: next })
+                    }).catch(() => {});
+                }
+            };
+        }
+    </script>
+
+<%- include('partials/footer') %>

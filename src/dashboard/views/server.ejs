@@ -1,0 +1,265 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+    <section class="relative py-8" x-data="serverSettings()">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Server Header -->
+            <div class="flex items-center gap-4 mb-8">
+                <a href="/dashboard" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all">
+                    <i class="fas fa-arrow-left text-sm text-gray-400"></i>
+                </a>
+                <% if (typeof guild !== 'undefined' && guild) { %>
+                <% if (guild.icon) { %>
+                    <img src="https://cdn.discordapp.com/icons/<%= guild.id %>/<%= guild.icon %>.png?size=96" alt="" class="w-12 h-12 rounded-xl">
+                <% } else { %>
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500/20 to-purple-500/20 flex items-center justify-center text-xl font-bold text-primary-400"><%= guild.name?.charAt(0) || 'S' %></div>
+                <% } %>
+                <div>
+                    <h1 class="text-2xl font-bold"><%= guild.name || 'Server' %></h1>
+                    <p class="text-sm text-gray-500">Server Settings</p>
+                </div>
+                <% } %>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-6">
+                
+                <!-- Sidebar Navigation -->
+                <div class="lg:w-56 flex-shrink-0">
+                    <nav class="glass rounded-2xl p-2 lg:sticky lg:top-24 space-y-1">
+                        <button @click="activeTab = 'general'" 
+                                :class="activeTab === 'general' ? 'bg-primary-500/10 text-primary-400 border-primary-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'"
+                                class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium border transition-all">
+                            <i class="fas fa-cog w-4 text-center"></i>General
+                        </button>
+                        <button @click="activeTab = 'music'" 
+                                :class="activeTab === 'music' ? 'bg-primary-500/10 text-primary-400 border-primary-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'"
+                                class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium border transition-all">
+                            <i class="fas fa-music w-4 text-center"></i>Music
+                        </button>
+                        <button @click="activeTab = 'permissions'" 
+                                :class="activeTab === 'permissions' ? 'bg-primary-500/10 text-primary-400 border-primary-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5 border-transparent'"
+                                class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium border transition-all">
+                            <i class="fas fa-shield-halved w-4 text-center"></i>Permissions
+                        </button>
+                        <a href="/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>/player" 
+                           class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent transition-all">
+                            <i class="fas fa-play w-4 text-center"></i>Player
+                        </a>
+                        <a href="/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>/analytics" 
+                           class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent transition-all">
+                            <i class="fas fa-chart-line w-4 text-center"></i>Analytics
+                        </a>
+                        <a href="/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>/commands" 
+                           class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 border border-transparent transition-all">
+                            <i class="fas fa-terminal w-4 text-center"></i>Commands
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Main Content -->
+                <div class="flex-1 min-w-0">
+
+                    <!-- General Settings -->
+                    <div x-show="activeTab === 'general'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                        <div class="glass rounded-2xl p-6 sm:p-8">
+                            <h2 class="text-xl font-semibold mb-6">General Settings</h2>
+                            
+                            <div class="space-y-6">
+                                <!-- Language -->
+                                <div>
+                                    <label class="text-sm font-medium text-gray-300 mb-2 block">Language</label>
+                                    <select x-model="settings.language" class="w-full sm:w-72 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-primary-500/50 transition-all">
+                                        <option value="en" class="bg-surface-800">English</option>
+                                        <option value="ar" class="bg-surface-800">العربية</option>
+                                        <option value="es" class="bg-surface-800">Español</option>
+                                        <option value="fr" class="bg-surface-800">Français</option>
+                                        <option value="de" class="bg-surface-800">Deutsch</option>
+                                        <option value="tr" class="bg-surface-800">Türkçe</option>
+                                    </select>
+                                </div>
+
+                                <!-- DJ Role -->
+                                <div>
+                                    <label class="text-sm font-medium text-gray-300 mb-2 block">DJ Role</label>
+                                    <p class="text-xs text-gray-500 mb-2">Only users with this role can use DJ-restricted commands</p>
+                                    <select x-model="settings.dj_role_id" class="w-full sm:w-72 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-primary-500/50 transition-all">
+                                        <option value="" class="bg-surface-800">None (everyone can DJ)</option>
+                                        <% if (typeof roles !== 'undefined') { roles.forEach(role => { %>
+                                            <option value="<%= role.id %>" class="bg-surface-800"><%= role.name %></option>
+                                        <% }); } %>
+                                    </select>
+                                </div>
+
+                                <!-- 24/7 Mode -->
+                                <div class="flex items-center justify-between py-4 px-5 rounded-xl bg-white/[0.02] border border-white/5">
+                                    <div>
+                                        <h4 class="text-sm font-medium">24/7 Mode</h4>
+                                        <p class="text-xs text-gray-500 mt-0.5">Keep the bot in voice channel permanently</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" x-model="settings.stay_247">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Music Settings -->
+                    <div x-show="activeTab === 'music'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                        <div class="glass rounded-2xl p-6 sm:p-8">
+                            <h2 class="text-xl font-semibold mb-6">Music Settings</h2>
+                            
+                            <div class="space-y-6">
+                                <!-- Default Volume -->
+                                <div>
+                                    <label class="text-sm font-medium text-gray-300 mb-2 block">Default Volume</label>
+                                    <div class="flex items-center gap-4">
+                                        <input type="range" x-model="settings.default_volume" min="1" max="100" 
+                                               class="flex-1 h-2 bg-white/10 rounded-full appearance-none cursor-pointer accent-primary-500">
+                                        <span class="text-sm font-mono w-12 text-right" x-text="settings.default_volume + '%'"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Max Volume -->
+                                <div>
+                                    <label class="text-sm font-medium text-gray-300 mb-2 block">Max Volume</label>
+                                    <div class="flex items-center gap-4">
+                                        <input type="range" x-model="settings.max_volume" min="1" max="200" 
+                                               class="flex-1 h-2 bg-white/10 rounded-full appearance-none cursor-pointer accent-primary-500">
+                                        <span class="text-sm font-mono w-12 text-right" x-text="settings.max_volume + '%'"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Max Queue Size -->
+                                <div>
+                                    <label class="text-sm font-medium text-gray-300 mb-2 block">Max Queue Size</label>
+                                    <input type="number" x-model="settings.max_queue_size" min="1" max="10000"
+                                           class="w-40 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:border-primary-500/50 transition-all">
+                                </div>
+
+                                <!-- Toggles -->
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between py-4 px-5 rounded-xl bg-white/[0.02] border border-white/5">
+                                        <div>
+                                            <h4 class="text-sm font-medium">Auto-play</h4>
+                                            <p class="text-xs text-gray-500 mt-0.5">Automatically play related songs when queue ends</p>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" x-model="settings.autoplay">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+
+                                    <div class="flex items-center justify-between py-4 px-5 rounded-xl bg-white/[0.02] border border-white/5">
+                                        <div>
+                                            <h4 class="text-sm font-medium">Announce Songs</h4>
+                                            <p class="text-xs text-gray-500 mt-0.5">Send a message when a new song starts playing</p>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" x-model="settings.announce_songs">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+
+                                    <div class="flex items-center justify-between py-4 px-5 rounded-xl bg-white/[0.02] border border-white/5">
+                                        <div>
+                                            <h4 class="text-sm font-medium">Vote Skip</h4>
+                                            <p class="text-xs text-gray-500 mt-0.5">Require vote majority to skip songs</p>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" x-model="settings.vote_skip">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Permissions -->
+                    <div x-show="activeTab === 'permissions'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                        <div class="glass rounded-2xl p-6 sm:p-8">
+                            <h2 class="text-xl font-semibold mb-2">Permissions</h2>
+                            <p class="text-sm text-gray-400 mb-6">Control which roles can use specific command categories</p>
+                            
+                            <div class="space-y-4">
+                                <% 
+                                const permCategories = ['music', 'admin', 'utility'];
+                                permCategories.forEach(cat => { 
+                                %>
+                                <div class="py-4 px-5 rounded-xl bg-white/[0.02] border border-white/5">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-<%= cat === 'music' ? 'music' : cat === 'admin' ? 'shield-halved' : 'wrench' %> w-4 text-primary-400"></i>
+                                            <span class="text-sm font-medium"><%= cat.charAt(0).toUpperCase() + cat.slice(1) %> Commands</span>
+                                        </div>
+                                        <span class="text-xs text-gray-500">All roles</span>
+                                    </div>
+                                </div>
+                                <% }); %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="mt-6 flex items-center justify-between">
+                        <div x-show="saved" x-transition class="flex items-center gap-2 text-sm text-emerald-400">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Settings saved!</span>
+                        </div>
+                        <div x-show="saveError" x-transition class="flex items-center gap-2 text-sm text-red-400">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span x-text="saveError"></span>
+                        </div>
+                        <div class="flex-1"></div>
+                        <button @click="saveSettings()" 
+                                :disabled="saving"
+                                class="px-6 py-3 bg-primary-500 hover:bg-primary-400 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl font-semibold text-sm transition-all shadow-lg shadow-primary-500/25 flex items-center gap-2">
+                            <i class="fas" :class="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                            <span x-text="saving ? 'Saving...' : 'Save Changes'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function serverSettings() {
+            return {
+                activeTab: 'general',
+                saving: false,
+                saved: false,
+                saveError: '',
+                settings: <%- JSON.stringify(typeof settings !== 'undefined' ? settings : {
+                    language: 'en', dj_role_id: '', stay_247: false,
+                    default_volume: 50, max_volume: 100, max_queue_size: 500,
+                    autoplay: false, announce_songs: true, vote_skip: false
+                }) %>,
+                async saveSettings() {
+                    this.saving = true;
+                    this.saved = false;
+                    this.saveError = '';
+                    try {
+                        const res = await fetch('/api/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>/settings', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.settings)
+                        });
+                        if (!res.ok) throw new Error('Failed to save');
+                        this.saved = true;
+                        setTimeout(() => this.saved = false, 3000);
+                    } catch (e) {
+                        this.saveError = e.message || 'Failed to save settings';
+                        setTimeout(() => this.saveError = '', 4000);
+                    } finally {
+                        this.saving = false;
+                    }
+                }
+            };
+        }
+    </script>
+
+<%- include('partials/footer') %>

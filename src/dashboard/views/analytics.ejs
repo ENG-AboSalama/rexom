@@ -1,0 +1,211 @@
+<%- include('partials/head') %>
+<%- include('partials/navbar') %>
+
+    <%
+        const dailyStats = typeof stats !== 'undefined' && stats.daily ? stats.daily : [];
+        const lb = typeof leaderboard !== 'undefined' ? leaderboard : [];
+        const hist = typeof history !== 'undefined' ? history : [];
+    %>
+
+    <section class="relative py-8">
+        <div class="absolute top-0 left-0 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
+        
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Back + Server Name -->
+            <div class="flex items-center gap-4 mb-8">
+                <a href="/server/<%= typeof guild !== 'undefined' ? guild.id : '' %>" class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all">
+                    <i class="fas fa-arrow-left text-sm text-gray-400"></i>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-bold"><%= typeof guild !== 'undefined' ? guild.name : 'Server' %></h1>
+                    <p class="text-sm text-gray-500">Analytics & Statistics</p>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+                <%
+                    const totalSongs = dailyStats.reduce((s, d) => s + (d.songs_played || 0), 0);
+                    const totalUsers = dailyStats.reduce((s, d) => s + (d.unique_users || 0), 0);
+                    const totalDuration = dailyStats.reduce((s, d) => s + (d.total_duration || 0), 0);
+                    const totalCommands = dailyStats.reduce((s, d) => s + (d.commands_used || 0), 0);
+                    const durationHours = Math.round(totalDuration / 3600000);
+                %>
+                <div class="glass rounded-2xl p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-9 h-9 rounded-lg bg-primary-500/10 flex items-center justify-center">
+                            <i class="fas fa-music text-primary-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold"><%= totalSongs.toLocaleString() %></div>
+                    <div class="text-xs text-gray-500 mt-0.5">Songs Played</div>
+                </div>
+                <div class="glass rounded-2xl p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                            <i class="fas fa-users text-blue-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold"><%= totalUsers.toLocaleString() %></div>
+                    <div class="text-xs text-gray-500 mt-0.5">Unique Listeners</div>
+                </div>
+                <div class="glass rounded-2xl p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                            <i class="fas fa-clock text-emerald-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold"><%= durationHours %><span class="text-sm text-gray-500 ml-1">hrs</span></div>
+                    <div class="text-xs text-gray-500 mt-0.5">Listen Time</div>
+                </div>
+                <div class="glass rounded-2xl p-5">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                            <i class="fas fa-terminal text-amber-400 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="text-2xl font-bold"><%= totalCommands.toLocaleString() %></div>
+                    <div class="text-xs text-gray-500 mt-0.5">Commands Used</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Chart -->
+                <div class="lg:col-span-2">
+                    <div class="glass rounded-2xl p-6">
+                        <h3 class="font-semibold mb-5">Activity (Last 14 Days)</h3>
+                        <div class="relative h-64">
+                            <canvas id="activityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Leaderboard -->
+                <div>
+                    <div class="glass rounded-2xl p-6 h-full">
+                        <h3 class="font-semibold mb-5">Top Listeners</h3>
+                        <% if (lb.length > 0) { %>
+                        <div class="space-y-3">
+                            <% lb.slice(0, 10).forEach((entry, i) => { %>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 text-center text-xs font-bold <%= i < 3 ? 'text-amber-400' : 'text-gray-600' %>"><%= i + 1 %></span>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-sm font-medium truncate"><%= entry.username || entry.user_id %></div>
+                                </div>
+                                <span class="text-xs text-gray-500 font-mono"><%= entry.songs_played || entry.count || 0 %></span>
+                            </div>
+                            <% }); %>
+                        </div>
+                        <% } else { %>
+                        <div class="text-center py-8">
+                            <i class="fas fa-trophy text-xl text-gray-700 mb-2"></i>
+                            <p class="text-sm text-gray-500">No data yet</p>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent History -->
+            <% if (hist.length > 0) { %>
+            <div class="glass rounded-2xl p-6 mt-6">
+                <h3 class="font-semibold mb-5">Recent Tracks</h3>
+                <div class="space-y-2">
+                    <% hist.slice(0, 15).forEach(track => { %>
+                    <div class="flex items-center gap-4 py-2.5 px-4 rounded-xl hover:bg-white/5 transition-all">
+                        <i class="fas fa-music text-xs text-gray-600 w-4"></i>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-medium truncate"><%= track.title %></div>
+                            <div class="text-xs text-gray-500 truncate"><%= track.author %></div>
+                        </div>
+                        <div class="text-xs text-gray-600"><%= track.played_by || '' %></div>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+            <% } %>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const dailyData = <%- JSON.stringify(dailyStats) %>;
+            const labels = dailyData.map(d => {
+                const date = new Date(d.date);
+                return date.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+            });
+            const songsData = dailyData.map(d => d.songs_played || 0);
+            const usersData = dailyData.map(d => d.unique_users || 0);
+
+            const ctx = document.getElementById('activityChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label: 'Songs Played',
+                                data: songsData,
+                                borderColor: '#e94560',
+                                backgroundColor: 'rgba(233,69,96,0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#e94560'
+                            },
+                            {
+                                label: 'Unique Users',
+                                data: usersData,
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102,126,234,0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 3,
+                                pointBackgroundColor: '#667eea'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { intersect: false, mode: 'index' },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { color: '#9ca3af', usePointStyle: true, padding: 20, font: { family: 'Outfit', size: 12 } }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(21,26,39,0.95)',
+                                titleColor: '#fff',
+                                bodyColor: '#9ca3af',
+                                borderColor: 'rgba(255,255,255,0.1)',
+                                borderWidth: 1,
+                                cornerRadius: 12,
+                                padding: 12,
+                                titleFont: { family: 'Outfit', weight: '600' },
+                                bodyFont: { family: 'Outfit' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+                                ticks: { color: '#6b7280', font: { family: 'Outfit', size: 11 } }
+                            },
+                            y: {
+                                grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+                                ticks: { color: '#6b7280', font: { family: 'Outfit', size: 11 } },
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+<%- include('partials/footer') %>
