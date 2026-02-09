@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="banner.png" alt="Rexom Banner" width="100%" />
+  <img 
+    src="banner.png"
+    alt="Rexom Banner"
+    style="width: 65%; object-fit: contain;"
+  />
 </p>
 
 <h1 align="center">Rexom</h1>
